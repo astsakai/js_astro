@@ -1,7 +1,8 @@
 /*
- * !/usr/my/bin/perl
  * “V•¶ŒvZŠÖŒWƒXƒNƒŠƒvƒg version 0.17j at 2017/09/15
- * (c) 1999-2001, 2004, 2005, 2017 Yoshihiro Sakai & Sakai Institute of Astrology
+ * Copyright (c) 1999-2001, 2004, 2005, 2017 Yoshihiro Sakai & Sakai Institute of Astrology
+ * This software is released under the MIT License.
+ * http://opensource.org/licenses/mit-license.php
  * 2017/06/05[0.16j] ‹O“¹—v‘f‚Uƒpƒ‰”Å‚É‘Î‰
  * 2017/09/15[0.17j] ƒ¢‚s‚ÌŒvZ®‚ğŒ©’¼‚·‚Â‚¢‚Å‚Éo“T‚ğ‘‚­
  */

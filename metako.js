@@ -1,7 +1,8 @@
 /*
- *占星術計算エンジン「めたこ」 version 0.20j at 2017/04/30, 2017/05/05
- *(c) 1999-2001, 2003, 2004, 2017 Yoshihiro Sakai & Sakai Institute of Astrology
- *require 'math.pl';
+ * 占星術計算エンジン「めたこ」 version 0.20j at 2017/04/30, 2017/05/05
+ * Copyright (c) 1999-2001, 2003, 2004, 2017 Yoshihiro Sakai & Sakai Institute of Astrology
+ * This software is released under the MIT License.
+ * http://opensource.org/licenses/mit-license.php
  */
 
 var planame = ["",

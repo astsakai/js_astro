@@ -1,6 +1,9 @@
 /*
  * 天体位置計算エンジン「はいぱーへきちゃん」 version 1.00-j04
- * (c) 1999-2004, 2017 Yoshihiro Sakai & Sakai Institute of Astrology
+ * Copyright (c) 1999-2004, 2017 Yoshihiro Sakai & Sakai Institute of Astrology
+ * This software is released under the MIT License.
+ * http://opensource.org/licenses/mit-license.php
+ *
  * This library uses simplified VSOP87-D, ELP2000-82B, PLUTO-95 developed by
  * Bureau des Longitudes, French. This library valids 1700-2100 Common Era.
  * 2000/03/19[h02] 一応、第１次光行差と章動の補正を入れといた。

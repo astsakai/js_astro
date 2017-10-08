@@ -1,11 +1,12 @@
 /* 
  *!/usr/local/bin/perl
  *天体位置計算エンジン「はいぱーへきちゃん」冥王星計算ルーチン
- *(c) 1999-2001, 2017 Yoshihiro Sakai & Sakai Institute of Astrology
+ * Copyright (c) 1999-2001, 2017 Yoshihiro Sakai & Sakai Institute of Astrology
+ * This software is released under the MIT License.
+ * http://opensource.org/licenses/mit-license.php
+ *
  *This library uses simplified VSOP87-D, ELP2000-82B, PLUTO-95 developed by
  *Bureau des Longitudes, French. This library valids 1700-2100 Common Era.
- *require 'astronomy.pl';
- *require 'math.pl';
  */
 
 function calPositPL_bdl( JD ){

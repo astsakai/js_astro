@@ -1,7 +1,8 @@
 /*
- *#!/usr/local/bin/perl
- *経緯度データファイル。それだけ。
- *(c) 1999-2001, 2017 Yoshihiro Sakai & Sakai Institute of Astrology
+ * 経緯度データファイル。それだけ。
+ * Copyright (c) 1999-2001, 2017 Yoshihiro Sakai & Sakai Institute of Astrology
+ * This software is released under the MIT License.
+ * http://opensource.org/licenses/mit-license.php
  */
 
 function findPlaceCoor( pid ){

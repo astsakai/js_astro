@@ -1,7 +1,8 @@
 /*
- *!/usr/local/bin/perl
- *ハウスカスプ計算ルーチン
- *(c) 1999-2001, 2004, 2017 Yoshihiro Sakai & Sakai Institute of Astrology
+ * ハウスカスプ計算ルーチン
+ * Copyright (c) 1999-2001, 2017 Yoshihiro Sakai & Sakai Institute of Astrology
+ * This software is released under the MIT License.
+ * http://opensource.org/licenses/mit-license.php
  */
 
 // House Cusp Calculating subroutine
