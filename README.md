@@ -3,11 +3,11 @@ Sample code for astrological calculation written by JavaScript.
 
 This library intent to:
 
-* calculation of major planetary position(geocentric, apparent longitude) for 0-4000 A.D.
+* calculation of major planetary position(geocentric, apparent longitude) for 0-4000 A.D. within 1 arcminute.
 * calculation of house cusp longitudes
 
 ## Requirement
-Newest Browser, but all comment is written in Japanese(Shift-JIS).
+Newest Browser, but all comments are written in Japanese(Shift-JIS).
 
 ## License
 Files in this repository are released under MIT license.
