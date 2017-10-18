@@ -133,7 +133,7 @@ function solveKepler(M, e){
 	do{
 		dE = (Mr - Er + e * Math.sin(Er)) / (1.0 - e * Math.cos(Er));
 		Er = Er + dE;
-	} while(dE > 1.0e-08);
+	} while(Math.abs(dE) > 1.0e-08);
 
 	var E = Er / deg2rad;
 
