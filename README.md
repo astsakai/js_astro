@@ -12,6 +12,9 @@ Newest Browser, but all comments are written in Japanese(Shift-JIS).
 ## License
 Files in this repository are released under MIT license.
 
+## Requirement
+Some functions requires [spirntf.js](https://github.com/alexei/sprintf.js), but if you don't want to use function cnv2*, not required.
+
 ## Demonstration
 To test this library, try [this](http://astsakai.halfmoon.jp/fortune/platest_js.html).
 
