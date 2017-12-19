@@ -19,4 +19,4 @@ Some functions requires [spirntf.js](https://github.com/alexei/sprintf.js), but 
 To test this library, try [this](http://astsakai.halfmoon.jp/fortune/platest_js.html).
 
 ## Notice
-This project is beta mode currently. It will active on December 2017 or August 2018.
+This project is beta mode currently. It will active on January 2018.
