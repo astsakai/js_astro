@@ -55,5 +55,5 @@ This library assumes **eastern geographical longitude and northern geographical 
 ## Demonstration
 To test this library, try [this](http://astsakai.halfmoon.jp/fortune/platest_js.html).
 
-## Errata for Documental Leaflet in Japanese
-This library has documental leaflet sales in Amazon Japan, and this leaflet has some error. Errata is [here](https://github.com/astsakai/js_astro/wiki/support).
+## Errata for Leaflet written in Japanese
+This library has a leaflet, and this leaflet has some error. Errata is [here](https://github.com/astsakai/js_astro/wiki/support).
