@@ -48,8 +48,12 @@ Last Argument `1` means Placidus house system.
 
 ### Important notice
 Timezone used in this library is **Japan Standard Time(UTC+0900)**. You may consider to wrapper function to convert your local timezone.
+I never consider any Daylight Saving Time in past and future.
 
 This library assumes **eastern geographical longitude and northern geographical latitude as plus**(eg. Tokyo: 139E42 = +139.70, 35N41 = +35.68).
 
 ## Demonstration
 To test this library, try [this](http://astsakai.halfmoon.jp/fortune/platest_js.html).
+
+## Errata for Documental Leaflet in Japanese
+This library has documental leaflet sales in Amazon Japan, and this leaflet has some error. Errata is [here](./wiki/support).
