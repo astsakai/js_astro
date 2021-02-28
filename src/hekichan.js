@@ -1,6 +1,6 @@
 /*
  * 天体位置計算エンジン「はいぱーへきちゃん」 version 1.00-j04
- * Copyright (c) 1999-2004, 2017 Yoshihiro Sakai & Sakai Institute of Astrology
+ * Copyright (c) 1999-2004, 2017, 2021 Yoshihiro Sakai & Sakai Institute of Astrology
  * This software is released under the MIT License.
  * http://opensource.org/licenses/mit-license.php
  *
@@ -24,6 +24,7 @@
  * 2017/05/25[j02] 冥王星の軌道要素を別ロジックに入れ替え。
  * 2017/06/05[j03] 軌道要素６パラ版に対応
  * 2017/08/07[j04] 冥王星の計算式がおかしなことになっていた。ついでにj02取り消し
+ * 2021/02/27[j05] 冥王星の軌道要素計算式を見直し
  */
 
 // 冥王星の1700～2100年以外の期間の軌道要素選択フラグ
@@ -128,27 +129,8 @@ function calPlaPos( JD, pid ){
 			case 10:
 				if( -1.15 <= T && T < 1.0 ){ // Pluto_mee valids thru 1885-2099
 					ppos = calPositPL_mee( T );
-				} else if( -3.00 <= T && T < -1.15 ){ // Pluto_bdl valids thru 1700-2100
-					ppos = calPositPL_bdl( JD );
-				} else { // それ以外は軌道要素で略算。
-					var L, p, O, a, e, i;
-					if( jplMode ){
-						// 軌道要素：https://ssd.jpl.nasa.gov/txt/aprx_pos_planets.pdf
-						L = 238.96535011 + 145.18042903 * T - 0.01262724 * T * T;
-						p = 224.09702598 -   0.00968827 * T;
-						O = 110.30167986 -   0.00809981 * T;
-						a =  39.48686035 +   0.00449751 * T;
-						e =   0.24885238 +   0.00006016 * T;
-						i =  17.14104260 -   0.00000501 * T;
-					} else {
-						L = 238.467028 + 146.6828495 * T - 0.0090561 * T * T;
-						p = 224.141630 +   1.3900789 * T + 0.0003019 * T * T;
-						O = 110.318223 +   1.3506963 * T + 0.0004014 * T * T;
-						a = 39.5403429 +  0.00313105 * T - 0.00003792 * T * T;
-						e = 0.24900535 +  0.00003885 * T - 0.000000562 * T * T;
-						i = 17.145104  -  0.0054981  * T - 0.0000384 * T * T;
-					}
-					ppos = orbitWork( L, p, O, i, e, a );
+				} else { // Pluto_obspm valids thru -3000 - 3000, but intentionally uses to 0 - 4000
+					ppos = calPositPL_obspm( T );
 				}
 				ppos[ 0 ] += 5029.0966 / 3600.0 * T;  // 線型近似の歳差補正する
 				break;
@@ -787,6 +769,93 @@ function calPositPL_mee( T ){
 
 	var res = new Array( lo, bo, ro );
 	return res;
+}
+
+// Taken from ftp://cyrano-se.obspm.fr/pub/3_solar_system/3_pluto/notice.txt
+function calPositPL_obspm( T ) {
+	var T2 = T  * T;
+	var T3 = T2 * T;
+
+	var a = 39.5404;
+       a += +0.004471   * T;
+       a += +0.0315           * Math.sin(  2.545150 * T + 1.8271 );
+       a += +0.0490           * Math.sin( 18.787117 * T + 4.4687 );
+       a += +0.0536           * Math.sin( 47.883664 * T + 3.8553 );
+       a += +0.2141           * Math.sin( 50.426476 * T + 4.1802 );
+       a += +0.0004           * Math.sin( 47.883664 * T + 4.1379 );
+       a += +0.0066           * Math.sin( 50.426476 * T + 5.1987 );
+       a += +0.0091           * Math.sin( 47.883664 * T + 5.6881 );
+       a += +0.0200           * Math.sin( 50.426476 * T + 6.0165 );
+       a += +0.000018   * T   * Math.sin( 47.883664 * T + 4.1379 );
+       a += +0.000330   * T   * Math.sin( 50.426476 * T + 5.1987 );
+       a += +0.000905   * T   * Math.sin( 47.883664 * T + 5.6881 );
+       a += +0.001990   * T   * Math.sin( 50.426476 * T + 6.0165 );
+       a += +0.00002256 * T2  * Math.sin( 47.883664 * T + 5.6881 );
+       a += +0.00004958 * T2  * Math.sin( 50.426476 * T + 6.0165 );
+
+	var l =  4.1702;
+       l += +2.533953     * T;
+       l += -0.00021295   * T2;
+       l += +0.0000001231 * T3;
+       l += +0.0014            * Math.sin(  0.199159 * T + 5.8539 );
+       l += +0.0050            * Math.sin(  0.364944 * T + 1.2137 );
+       l += +0.0055            * Math.sin(  0.397753 * T + 4.9469 );
+       l += +0.0002            * Math.sin(  2.543029 * T + 3.0186 );
+       l += +0.0012            * Math.sin( 18.787098 * T + 3.4938 );
+       l += +0.0008            * Math.sin( 18.817229 * T + 2.0097 );
+       l += +0.0050            * Math.sin( 50.426472 * T + 2.6252 );
+       l += +0.0015            * Math.sin( 52.969319 * T + 6.1048 );
+       l += +0.0008            * Math.sin(292.208471 * T + 4.7603 );
+       l += +0.0008            * Math.sin(292.265343 * T + 2.8055 );
+       l += +0.0031            * Math.sin(  0.364944 * T + 2.7888 );
+       l += +0.0004            * Math.sin(  2.543029 * T + 0.5111 );
+       l += +0.0003            * Math.sin( 18.787098 * T + 6.1336 );
+       l += +0.0000            * Math.sin( 50.426472 * T + 2.2515 );
+       l += +0.0004            * Math.sin(292.208471 * T + 0.0813 );
+       l += +0.0004            * Math.sin(292.265343 * T + 1.2477 );
+       l += +0.0004            * Math.sin( 50.426472 * T + 4.2694 );
+       l += +0.000156   * T    * Math.sin(  0.364944 * T + 2.7888 );
+       l += +0.000020   * T    * Math.sin(  2.543029 * T + 0.5111 );
+       l += +0.000017   * T    * Math.sin( 18.787098 * T + 6.1336 );
+       l += +0.000000   * T    * Math.sin( 50.426472 * T + 2.2515 );
+       l += +0.000022   * T    * Math.sin(292.208471 * T + 0.0813 );
+       l += +0.000022   * T    * Math.sin(292.265343 * T + 1.2477 );
+       l += +0.000044   * T    * Math.sin( 50.426472 * T + 4.2694 );
+       l += +0.00000110 * T2   * Math.sin( 50.426472 * T + 4.2694 );
+       l /= deg2rad;
+
+    var h = -0.1733;
+       h += -0.000013   * T;
+       h += +0.0012            * Math.sin(  2.541849 * T + 3.9572 );
+       h += +0.0008            * Math.sin( 21.329808 * T + 0.8858 );
+       h += +0.0012            * Math.sin( 47.883781 * T + 1.4929 );
+       h += +0.0005            * Math.sin( 50.426641 * T + 5.3286 );
+       h += +0.0037            * Math.sin( 52.969135 * T + 0.6139 );
+
+    var k = -0.1787;
+       k += -0.000070   * T;
+       k += +0.0006            * Math.sin(  2.512561 * T + 3.8516 );
+       k += +0.0013            * Math.sin(  2.543100 * T + 0.0218 );
+       k += +0.0008            * Math.sin( 21.329765 * T + 2.4324 );
+       k += +0.0012            * Math.sin( 47.883788 * T + 6.2432 );
+       k += +0.0005            * Math.sin( 50.426611 * T + 3.0920 );
+       k += +0.0038            * Math.sin( 52.969155 * T + 2.1566 );
+       k += +0.0004            * Math.sin(  2.512561 * T + 5.3919 );
+       k += +0.000022   * T    * Math.sin(  2.512561 * T + 5.3919 );
+
+    var p = +0.1398;
+       p += +0.000007   * T;
+       p += +0.0002            * Math.sin( 50.426871 * T + 0.6705 );
+       p += +0.0002            * Math.sin( 55.512211 * T + 6.0770 );
+
+    var q = -0.0517;
+       q += +0.000020   * T;
+       q += +0.0002            * Math.sin( 50.426859 * T + 5.4131 );
+       q += +0.0002            * Math.sin( 55.512206 * T + 1.3314 );
+
+	// my( $L, $opi, $omg, $i, $e, $a ) = convertOrbitalElement( $a, $l, $h, $k, $p, $q );
+	var orbitalElements = convertOrbitalElement( a, l, h, k, p, q );
+	return orbitWork( ...orbitalElements );
 }
 
 // 太陽と月の速度

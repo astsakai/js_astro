@@ -1,10 +1,11 @@
 /*
- * 天文計算関係スクリプト version 0.17j at 2017/09/15
- * Copyright (c) 1999-2001, 2004, 2005, 2017 Yoshihiro Sakai & Sakai Institute of Astrology
+ * 天文計算関係スクリプト version 0.18j at 2021/02/27
+ * Copyright (c) 1999-2001, 2004, 2005, 2017, 2021 Yoshihiro Sakai & Sakai Institute of Astrology
  * This software is released under the MIT License.
  * http://opensource.org/licenses/mit-license.php
  * 2017/06/05[0.16j] 軌道要素６パラ版に対応
  * 2017/09/15[0.17j] ΔＴの計算式を見直すついでに出典を書く
+ * 2021/02/27[0.18j] 二体問題まわりロジック見直し
  */
 
 // グレゴリオ暦専用！
@@ -87,7 +88,7 @@ function calTimeCoefficient( JD ){
 
 // 軌道要素６パラ版→通常の軌道要素
 // a : semi-major axis (au).
-// l : mean longitude.
+// l : mean longitude (degree).
 // h : e * sin(pi).
 // k : e * cos(pi).
 // p : g * sin(om).
@@ -97,13 +98,14 @@ function calTimeCoefficient( JD ){
 // pi: longitude of the perihelion.
 // om: longitude of the ascending node.
 function convertOrbitalElement( a, l, h, k, p, q ) {
+	var L = l;
 	var e = Math.sqrt( h * h + k * k );
 	var g = Math.sqrt( p * p + q * q );
 	var i = Math.asin( g ) * 2.0 / deg2rad;
 	var opi = Math.atan2( h, k ) / deg2rad;
 	var omg = Math.atan2( p, q ) / deg2rad;
 
-	var result = [l, opi, omg, i, e, a];
+	var result = [L, opi, omg, i, e, a];
 	return result;
 }
 
@@ -111,14 +113,19 @@ function convertOrbitalElement( a, l, h, k, p, q ) {
 function orbitWork(L, opi, omg, i, e, a){
 	var M = mod360(L - opi);
 	var E = mod360(solveKepler(M, e));
-	var sV = Math.sqrt(1.0 - e * e) * Math.sin(E * deg2rad) / (1.0 - e * Math.cos(E * deg2rad));
-	var cV = (Math.cos(E * deg2rad) - e) / (1.0 - e * Math.cos(E * deg2rad));
-	var V  = Math.atan2(sV, cV) / deg2rad;
-	var U = mod360(opi + V - omg);
 
-	r = a * (1.0 - e * Math.cos(E * deg2rad));
-	l = mod360(opi + V);
-	b = asin4deg(Math.sin(i * deg2rad) * Math.sin(U * deg2rad));
+	var rE  = E * deg2rad;
+	var thv = Math.sqrt( (1 + e) / (1 - e) ) * Math.tan(rE / 2.0);
+	var v   = mod360(Math.atan2(thv, 1.0) * 2.0 / deg2rad);
+	var r   = a * (1.0 - e * Math.cos(rE));
+	var u   = L + v - M - omg;
+	
+	var ri = i * deg2rad;
+	var ru = u * deg2rad;
+	var l  = mod360(omg + Math.atan2(Math.cos(ri) * Math.sin(ru), Math.cos(ru)) / deg2rad);
+
+	var rb = Math.asin(Math.sin(ru) * Math.sin(ri));
+	var b  = rb / deg2rad;
 
 	var res = new Array(l, b, r);
 	return res;
@@ -128,16 +135,12 @@ function orbitWork(L, opi, omg, i, e, a){
 function solveKepler(M, e){
 	var Mr = M * deg2rad;
 	var Er = Mr;
-	var dE = 0.0;
 
-	do{
-		dE = (Mr - Er + e * Math.sin(Er)) / (1.0 - e * Math.cos(Er));
-		Er = Er + dE;
-	} while(Math.abs(dE) > 1.0e-08);
+	for( var i = 0; i < 20; i++ ){
+		Er = Mr + e * Math.sin( Er );
+	}
 
-	var E = Er / deg2rad;
-
-	return E;
+	return Er / deg2rad;
 }
 
 // 日心位置から地心位置へコンバートし、地心黄経を返す。
