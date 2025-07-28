@@ -25,13 +25,14 @@ var planetPosition = new Array();
 planetPosition = calPlanetPosition2( year, month, day, hour, minute, longitude, latitude );
 ```
 
-`calPlanetPosition2` returns array of 15 values:
+`calPlanetPosition2` returns array of 20 values:
 
 * Julian day
 * Planetary Position(Geocentric apparent ecliptic longitude): Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto
 * Lunar Node & apogee Longitude(from approximate osculate orbital elements)
 * Longitude of Ascendant, MC(Mid heaven)
 	* All value is expressed in degree, without Julian day.
+* Position of minor planets(Geocentric apparent ecliptic longitude): Ceres, Pallas, Juno, Vesta, Chiron
 
 ### Calculate for house cusp longitudes
 
