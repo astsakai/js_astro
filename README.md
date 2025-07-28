@@ -48,6 +48,9 @@ Last Argument `1` means Placidus house system.
 `calHouseCusp2` returns array of house cusp longitude(Index of this array starts **1**, **not 0**).
 
 ### Important notice
+In this library, definition of major planets and minor planets is modern astrological, not currently astronomical.
+I assume Pluto as major planet and Ceres as minor planet, which they are dwarf planets in currently astronomy.
+
 Timezone used in this library is **Japan Standard Time(UTC+0900)**. You may consider to wrapper function to convert your local timezone.
 I never consider any Daylight Saving Time in past and future.
 
