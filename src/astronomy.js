@@ -1,5 +1,5 @@
 /*
- * 天文計算関係スクリプト version 0.20j
+ * 天文計算関係スクリプト version 0.22j
  * Copyright (c) 1999-2001, 2004, 2005, 2017, 2021, 2024, 2025 Yoshihiro Sakai & Sakai Institute of Astrology
  * This software is released under the MIT License.
  * http://opensource.org/licenses/mit-license.php
@@ -9,6 +9,7 @@
  * 2024/12/20[0.19j] ΔＴ計算式見直し
  * 2025/04/14[0.20j] 均時差計算式見直し
  * 2025/04/16[0.21j] 地方恒星時・黄道傾斜角計算式見直し
+ * 2025/08/18[0.22j] 章動・黄道傾斜角計算ロジック見直し
  */
 
 // グレゴリオ暦専用！
@@ -309,10 +310,15 @@ function calOblique( JD ){
 	const Lm  = (218.3165  + T * 481267.8813) * deg2rad;
 
 	const e = 84381.406 + T * (-46.836769 + T * (-0.0001831 + T * 0.00200340));
-	let deps  = ( 9.205 + 0.001 * T) * Math.cos(1.0 * Omg) + 0.002 * Math.sin(1.0 * Omg);
-	    deps += ( 0.573 + 0.000 * T) * Math.cos(2.0 * Ls)  + 0.000 * Math.sin(2.0 * Ls);
-	    deps += ( 0.098 + 0.000 * T) * Math.cos(2.0 * Lm)  + 0.000 * Math.sin(2.0 * Lm);
-	    deps += (-0.089 + 0.000 * T) * Math.cos(2.0 * Omg) + 0.000 * Math.sin(2.0 * Omg);
+	const C0 = [ 9.205, 0.573, 0.098, -0.089 ];
+	const C1 = [ 0.001, 0.000, 0.000,  0.000 ];
+	const S0 = [ 0.002, 0.000, 0.000,  0.000 ];
+	const th = [ 1.0 * Omg, 2.0 * Ls, 2.0 * Lm, 2.0 * Omg ];
+
+	let deps = 0.0;
+	for( let i = 0; i < th.length; i++ ){
+		deps += (C0[i] + C1[i] * T) * Math.cos(th[i]) + S0[i] * Math.sin(th[i]);
+	}
 
 	return (e + deps) / 3600.0;
 }
@@ -326,11 +332,15 @@ function calNutation( JD ){
 	const Lm  = (218.3165  + T * 481267.8813) * deg2rad;
 	const M   = (357.52772 + T *  35999.0503) * deg2rad;
 
-	let dpsi  = (-17.206 - 0.017 * T) * Math.sin(1.0 * Omg) + 0.003 * Math.cos(1.0 * Omg);
-	    dpsi += ( -1.317 - 0.000 * T) * Math.sin(2.0 * Ls)  - 0.001 * Math.cos(2.0 * Ls);
-	    dpsi += ( -0.227 - 0.000 * T) * Math.sin(2.0 * Lm)  + 0.000 * Math.cos(2.0 * Lm);
-	    dpsi += (  0.207 + 0.000 * T) * Math.sin(2.0 * Omg) + 0.000 * Math.cos(2.0 * Omg);
-	    dpsi += (  0.147 - 0.000 * T) * Math.sin(1.0 * M)   + 0.001 * Math.cos(1.0 * M);
+	const S0 = [-17.206, -1.317, -0.227, +0.207, +0.147];
+	const S1 = [ -0.017, -0.000, -0.000, +0.000, -0.000];
+	const C0 = [ +0.003, -0.001, +0.000, +0.000, +0.001];
+	const th = [ 1.0 * Omg, 2.0 * Ls, 2.0 * Lm, 2.0 * Omg, 1.0 * M ];
+
+	let dpsi = 0.0;
+	for( let i = 0; i < th.length; i++ ){
+		dpsi += (S0[i] + S1[i] * T) * Math.sin(th[i]) + C0[i] * Math.cos(th[i]);
+	}
 
 	return dpsi;
 }
