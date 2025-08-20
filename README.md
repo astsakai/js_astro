@@ -51,6 +51,8 @@ Last Argument `1` means Placidus house system.
 In this library, definition of major planets and minor planets is modern astrological, not currently astronomical.
 I assume Pluto as major planet and Ceres as minor planet, which they are dwarf planets in currently astronomy.
 
+**Positions of minor planets can calculate between December 30, 1924 12:00 TT and December 31, 2124 12:00 TT only.**
+
 Timezone used in this library is **Japan Standard Time(UTC+0900)**. You may consider to wrapper function to convert your local timezone.
 I never consider any Daylight Saving Time in past and future.
 
@@ -61,3 +63,4 @@ To test this library, try [this](http://astsakai.halfmoon.jp/fortune/platest_js.
 
 ## Errata for Leaflet written in Japanese
 This library has a leaflet, and this leaflet has some error. Errata is [here](https://github.com/astsakai/js_astro/wiki/support).
+
