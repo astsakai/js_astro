@@ -25,13 +25,14 @@ var planetPosition = new Array();
 planetPosition = calPlanetPosition2( year, month, day, hour, minute, longitude, latitude );
 ```
 
-`calPlanetPosition2` returns array of 15 values:
+`calPlanetPosition2` returns array of 20 values:
 
 * Julian day
 * Planetary Position(Geocentric apparent ecliptic longitude): Sun, Moon, Mercury, Venus, Mars, Jupiter, Saturn, Uranus, Neptune, Pluto
 * Lunar Node & apogee Longitude(from approximate osculate orbital elements)
 * Longitude of Ascendant, MC(Mid heaven)
 	* All value is expressed in degree, without Julian day.
+* Position of minor planets(Geocentric apparent ecliptic longitude): Ceres, Pallas, Juno, Vesta, Chiron
 
 ### Calculate for house cusp longitudes
 
@@ -47,6 +48,9 @@ Last Argument `1` means Placidus house system.
 `calHouseCusp2` returns array of house cusp longitude(Index of this array starts **1**, **not 0**).
 
 ### Important notice
+In this library, definition of major planets and minor planets is modern astrological, not currently astronomical.
+I assume Pluto as major planet and Ceres as minor planet, which they are dwarf planets in currently astronomy.
+
 Timezone used in this library is **Japan Standard Time(UTC+0900)**. You may consider to wrapper function to convert your local timezone.
 I never consider any Daylight Saving Time in past and future.
 

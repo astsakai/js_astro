@@ -1,11 +1,15 @@
 /*
- * 天文計算関係スクリプト version 0.18j at 2021/02/27
- * Copyright (c) 1999-2001, 2004, 2005, 2017, 2021 Yoshihiro Sakai & Sakai Institute of Astrology
+ * 天文計算関係スクリプト version 0.22j
+ * Copyright (c) 1999-2001, 2004, 2005, 2017, 2021, 2024, 2025 Yoshihiro Sakai & Sakai Institute of Astrology
  * This software is released under the MIT License.
  * http://opensource.org/licenses/mit-license.php
  * 2017/06/05[0.16j] 軌道要素６パラ版に対応
  * 2017/09/15[0.17j] ΔＴの計算式を見直すついでに出典を書く
  * 2021/02/27[0.18j] 二体問題まわりロジック見直し
+ * 2024/12/20[0.19j] ΔＴ計算式見直し
+ * 2025/04/14[0.20j] 均時差計算式見直し
+ * 2025/04/16[0.21j] 地方恒星時・黄道傾斜角計算式見直し
+ * 2025/08/18[0.22j] 章動・黄道傾斜角計算ロジック見直し
  */
 
 // グレゴリオ暦専用！
@@ -229,7 +233,7 @@ function coordinateConvertFromJ2000( arg ){
 }
 
 // 地方恒星時計算
-function calLST(JD, ho, mi, lo){
+function calLST_old(JD, ho, mi, lo){
 	var JD0 = Math.floor(JD - 0.5) + 0.5;
 	var T = (JD0 - 2451545.0) / 36525.0;
 	var UT = (JD - JD0) * 360.0 * 1.002737909350795;
@@ -250,8 +254,41 @@ function calLST(JD, ho, mi, lo){
 	return LST;
 }
 
+// いまどきの地方恒星時計算
+function calLST(JDut, ho, mi, lo) {
+	const Du = JDut - 2451545.0;
+
+	const JDtt = JDut + correctTDT( JDut );
+	const T = (JDtt - 2451545.0) / 36525.0;
+
+	// Earth Rotation Angle
+	let theta = 0.7790572732640 + 1.00273781191135448 * Du;
+	theta = theta - Math.floor(theta);
+
+	// Greenwich mean sidereal time
+	const GMST = 86400.0 * theta + (0.014506 + T * (4612.156534 + T * (1.3915817 - 0.00000044 * T))) / 15.0;
+
+	// Greenwich apparent sidereal time
+	const dpsi = calNutation(JDtt);
+	const eps  = calOblique(JDtt);
+	const GAST = GMST + dpsi * cos4deg(eps) / 15.0;
+
+	// Local apparent sidereal time in timely seconds
+	const LAST = GAST + 3600.0 * lo / 15.0;
+
+	// Local apparent sidereal time in degrees
+	let LASTd = LAST / ( 4.0 * 60.0 );
+	if (LASTd < 0.0) {
+		LASTd += 360.0;
+	} else if( LASTd >= 360.0 ){
+		LASTd -= 360.0;
+	}
+
+	return LASTd;
+}
+
 // 黄道傾斜角を計算する関数
-function calOblique(JD ){
+function calOblique_old(JD ){
 	var T = (JD - 2451545.0) / 36525.0;
 	var Omg = mod360(125.00452 - T *   1934.136261);
 	var Ls  = mod360(280.4665  + T *  36000.7698);
@@ -266,24 +303,50 @@ function calOblique(JD ){
 	return (e + deps) / 3600.0;
 }
 
+function calOblique( JD ){
+	const T = (JD - 2451545.0) / 36525.0;
+	const Omg = (125.00452 - T *   1934.136261) * deg2rad;
+	const Ls  = (280.4665  + T *  36000.7698) * deg2rad;
+	const Lm  = (218.3165  + T * 481267.8813) * deg2rad;
+
+	const e = 84381.406 + T * (-46.836769 + T * (-0.0001831 + T * 0.00200340));
+	const C0 = [ 9.205, 0.573, 0.098, -0.089 ];
+	const C1 = [ 0.001, 0.000, 0.000,  0.000 ];
+	const S0 = [ 0.002, 0.000, 0.000,  0.000 ];
+	const th = [ 1.0 * Omg, 2.0 * Ls, 2.0 * Lm, 2.0 * Omg ];
+
+	let deps = 0.0;
+	for( let i = 0; i < th.length; i++ ){
+		deps += (C0[i] + C1[i] * T) * Math.cos(th[i]) + S0[i] * Math.sin(th[i]);
+	}
+
+	return (e + deps) / 3600.0;
+}
+
 // 章動を計算する関数（簡略版）
 function calNutation( JD ){
-	var T = (JD - 2451545.0) / 36525.0;
+	const T = (JD - 2451545.0) / 36525.0;
 
-	var Omg = mod360(125.00452 - T *   1934.136261);
-	var Ls  = mod360(280.4665  + T *  36000.7698);
-	var Lm  = mod360(218.3165  + T * 481267.8813);
+	const Omg = (125.00452 - T *   1934.136261) * deg2rad;
+	const Ls  = (280.4665  + T *  36000.7698) * deg2rad;
+	const Lm  = (218.3165  + T * 481267.8813) * deg2rad;
+	const M   = (357.52772 + T *  35999.0503) * deg2rad;
 
-	var dpsi  = -17.20 * sin4deg(1.0 * Omg);
-	    dpsi +=  -1.32 * sin4deg(2.0 * Ls);
-	    dpsi +=  -0.23 * sin4deg(2.0 * Lm);
-	    dpsi +=   0.21 * sin4deg(2.0 * Omg);
+	const S0 = [-17.206, -1.317, -0.227, +0.207, +0.147];
+	const S1 = [ -0.017, -0.000, -0.000, +0.000, -0.000];
+	const C0 = [ +0.003, -0.001, +0.000, +0.000, +0.001];
+	const th = [ 1.0 * Omg, 2.0 * Ls, 2.0 * Lm, 2.0 * Omg, 1.0 * M ];
+
+	let dpsi = 0.0;
+	for( let i = 0; i < th.length; i++ ){
+		dpsi += (S0[i] + S1[i] * T) * Math.sin(th[i]) + C0[i] * Math.cos(th[i]);
+	}
 
 	return dpsi;
 }
 
 // 均時差を計算する関数
-function calEqT( JD ){
+function calEqT_old( JD ){
 	var  T = ( JD - 2451545.0 ) / 36525.0;
 
 	var L0  = mod360( 36000.76983 * T );
@@ -308,6 +371,36 @@ function calEqT( JD ){
 	E /= deg2rad;
 	return ( E * 4.0 );
 }
+
+// cf. https://aa.usno.navy.mil/faq/sun_approx
+// 軌道要素： https://ssd.jpl.nasa.gov/planets/approx_pos.html
+function calEqT( JD ) {
+	const T = (JD - 2451545.0) / 36525.0;
+
+	const l  = mod360( 100.46457166 + 35999.37244981 * T );
+	const p  = 102.93768193 + 0.32327364 * T;
+	const rM = (l - p) * deg2rad;
+	const e  = 0.01671123 - 0.00004392 * T;
+	const rC = 2 * e * Math.sin( rM ) + ( 5.0 / 4.0 * e * e ) * Math.sin( 2.0 * rM );
+	const L  = mod360( l + 180.0 + rC / deg2rad );
+
+	const obl = calOblique( JD );
+	const ce  = Math.cos( obl * deg2rad );
+	const rL  = L * deg2rad;
+	const sL  = Math.sin( rL );
+	const cL  = Math.cos( rL );
+	const rRA = Math.atan2( ce * sL, cL );
+	const RA  = mod360(rRA / deg2rad);
+
+	let EqT = (l + 180.0) - RA; // in degree
+	if( EqT > 180.0 ){
+		EqT -= 360.0;
+	} else if ( EqT < -180.0 ){
+		EqT += 360.0;
+	}
+	return 4.0 * EqT; // in minutes
+}
+
 
 ////////////////////////////////
 
@@ -341,49 +434,27 @@ function maxday(year, month){
 // ΔＴを管理する関数
 // formula A : Notes Scientifiques et Techniques du Bureau des Longitudes, nr. S055
 // from ftp://cyrano-se.obspm.fr/pub/6_documents/4_lunar_tables/newexp.pdf
-// formula B : Polynomial Expressions for Delta T (ΔT)
-// from https://eclipse.gsfc.nasa.gov/SEhelp/deltatpoly2004.html
-// formula C : Delta T : Polynomial Approximation of Time Period 1620-2013
-// from https://www.hindawi.com/archive/2014/480964/ (license: CC-BY-3.0)
+// formula D : Addendum 2020 to ‘Measurement of the Earth’s rotation: 720 BC to AD 2015
+// from https://royalsocietypublishing.org/doi/suppl/10.1098/rspa.2020.0776
 function correctTDT(JD){
 	var year = ( JD - 2451545.0 ) / 365.2425 + 2000.0;
 	var t, dt;
 
-	if( year < 948 ){ // formula A.26
-		t = ( JD - 2451545.0 ) / 36525.0;
-		dt = 2177.0 + t * ( 497.0 + t * 44.1 );
-	} else if( year < 1600 ){ // formula A.25
-		t = ( JD - 2451545.0 ) / 36525.0;
-		dt =  102.0 + t * ( 102.0 + t * 25.3 );
-	} else if( year < 1620 ){ // formula B
-		t = year - 1600;
-		dt = 120 + t * ( -0.9808 + t * ( -0.01532 + t / 7129 ) );
-	} else if( year < 2014 ){ // formula C
-		// last elements are sentinels.
-		var tep = [     1620,     1673,     1730,      1798,      1844,     1878,      1905,      1946,      1990,  2014 ];
-		var tk  = [    3.670,    3.120,    2.495,     1.925,     1.525,    1.220,     0.880,     0.455,     0.115, 0.000 ];
-		var ta0 = [   76.541,   10.872,   13.480,    12.584,     6.364,   -5.058,    13.392,    30.782,    55.281, 0.000 ];
-		var ta1 = [ -253.532,  -40.744,   13.075,     1.929,    11.004,   -1.701,   128.592,    34.348,    91.248, 0.000 ];
-		var ta2 = [  695.901,  236.890,    8.635,    60.896,   407.776,  -46.403,  -279.165,    46.452,    87.202, 0.000 ];
-		var ta3 = [-1256.982, -351.537,   -3.307, -1432.216, -4168.394, -866.171, -1282.050,  1295.550, -3092.565, 0.000 ];
-		var ta4 = [  627.152,   36.612, -128.294,  3129.071,  7561.686, 5917.585,  4039.490, -3210.913,  8255.422, 0.000 ];
+	if( year < 2019.0 ){ // formula D
+		const from = [-720, -100, 400, 1000, 1150, 1300, 1500, 1600, 1650, 1720, 1800, 1810, 1820, 1830, 1840, 1850, 1855, 1860, 1865, 1870, 1875, 1880, 1885, 1890, 1895, 1900, 1905, 1910, 1915, 1920, 1925, 1930, 1935, 1940, 1945, 1950, 1953, 1956, 1959, 1962, 1965, 1968, 1971, 1974, 1977, 1980, 1983, 1986, 1989, 1992, 1995, 1998, 2001, 2004, 2007, 2010, 2013, 2016];
+		const to   = [-100, 400, 1000, 1150, 1300, 1500, 1600, 1650, 1720, 1800, 1810, 1820, 1830, 1840, 1850, 1855, 1860, 1865, 1870, 1875, 1880, 1885, 1890, 1895, 1900, 1905, 1910, 1915, 1920, 1925, 1930, 1935, 1940, 1945, 1950, 1953, 1956, 1959, 1962, 1965, 1968, 1971, 1974, 1977, 1980, 1983, 1986, 1989, 1992, 1995, 1998, 2001, 2004, 2007, 2010, 2013, 2016, 2019];
+		const a0   = [20371.848, 11557.668, 6535.116, 1650.393, 1056.647, 681.149, 292.343, 109.127, 43.952, 12.068, 18.367, 15.678, 16.516, 10.804, 7.634, 9.338, 10.357, 9.04, 8.255, 2.371, -1.126, -3.21, -4.388, -3.884, -5.017, -1.977, 4.923, 11.142, 17.479, 21.617, 23.789, 24.418, 24.164, 24.426, 27.05, 28.932, 30.002, 30.76, 32.652, 33.621, 35.093, 37.956, 40.951, 44.244, 47.291, 50.361, 52.936, 54.984, 56.373, 58.453, 60.678, 62.898, 64.083, 64.553, 65.197, 66.061, 66.92, 68.109];
+		const a1   = [-9999.586, -5822.27, -5671.519, -753.21, -459.628, -421.345, -192.841, -78.697, -68.089, 2.507, -3.481, 0.021, -2.157, -6.018, -0.416, 1.642, -0.486, -0.591, -3.456, -5.593, -2.314, -1.893, 0.101, -0.531, 0.134, 5.715, 6.828, 6.33, 5.518, 3.02, 1.333, 0.052, -0.419, 1.645, 2.499, 1.127, 0.737, 1.409, 1.577, 0.868, 2.275, 3.035, 3.157, 3.199, 3.069, 2.878, 2.354, 1.577, 1.648, 2.235, 2.324, 1.804, 0.674, 0.466, 0.804, 0.839, 1.007, 1.277];
+		const a2   = [776.247, 1303.151, -298.291, 184.811, 108.771, 61.953, -6.572, 10.505, 38.333, 41.731, -1.126, 4.629, -6.806, 2.944, 2.658, 0.261, -2.389, 2.284, -5.148, 3.011, 0.269, 0.152, 1.842, -2.474, 3.138, 2.443, -1.329, 0.831, -1.643, -0.856, -0.831, -0.449, -0.022, 2.086, -1.232, 0.22, -0.61, 1.282, -1.115, 0.406, 1.002, -0.242, 0.364, -0.323, 0.193, -0.384, -0.14, -0.637, 0.708, -0.121, 0.21, -0.729, -0.402, 0.194, 0.144, -0.109, 0.277, -0.007];
+		const a3   = [409.16, -503.433, 1085.087, -25.346, -24.641, -29.414, 16.197, 3.018, -2.127, -37.939, 1.918, -3.812, 3.25, -0.096, -0.539, -0.883, 1.558, -2.477, 2.72, -0.914, -0.039, 0.563, -1.438, 1.871, -0.232, -1.257, 0.72, -0.825, 0.262, 0.008, 0.127, 0.142, 0.702, -1.106, 0.614, -0.277, 0.631, -0.799, 0.507, 0.199, -0.414, 0.202, -0.229, 0.172, -0.192, 0.081, -0.165, 0.448, -0.276, 0.11, -0.313, 0.109, 0.199, -0.017, -0.084, 0.128, -0.095, -0.139];
 
-		var i = 0;
-		for( var j = 0; j < tep.length; j++ ){
-			if( tep[ j ] <= year && year < tep[ j + 1 ] ){
-				i = j;
+		for( let i = 0; i < a0.length; i++ ){
+			if (from[i] <= year && year < to[i]) {
+				t = ( year - from[i] ) / ( to[i] - from[i] );
+				dt = a0[i] + t * ( a1[i] + t * ( a2[i] + t * a3[i] ) );
 				break;
 			}
 		}
-		var k  = tk[ i ];
-		var a0 = ta0[ i ];
-		var a1 = ta1[ i ];
-		var a2 = ta2[ i ];
-		var a3 = ta3[ i ];
-		var a4 = ta4[ i ];
-
-		var u = k + ( year - 2000 ) / 100;
-		dt = a0 + u * ( a1 + u * ( a2 + u * ( a3 + u * a4 ) ) );
 	} else { // formula A.25
 		t = ( JD - 2451545.0 ) / 36525.0;
 		dt =  102.0 + t * ( 102.0 + t * 25.3 );
@@ -397,7 +468,7 @@ function correctTDT(JD){
 }
 
 function advanceDate( date, step ){
-	return encodeDate(cnvCalendar(calJDz(decodeDate(date)) + step));
+	return encodeDate(...cnvCalendar(calJDz(...decodeDate(date)) + step));
 }
 
 function calDist(sy, sm, sd, ey, em, ed){

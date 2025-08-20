@@ -61,4 +61,14 @@ function ceil( X ){
 	return Math.ceil( X );
 }
 
-1;
+// x in [-1, +1]
+function calChebyshevPolynomial(x, coefs) {
+	const t = Math.acos(x);
+
+	let y = 0;
+	for(let i = 0; i < coefs.length; i++) {
+		y += coefs[ i ] * Math.cos(i * t);
+	}
+
+	return y;
+}
