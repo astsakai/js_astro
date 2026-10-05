@@ -6,7 +6,7 @@
  */
 
 // $PI = 3.141592653589793;
-deg2rad = Math.PI / 180.0;
+var deg2rad = Math.PI / 180.0;
 
 function sin4deg( X ){
 	return Math.sin( X * deg2rad );

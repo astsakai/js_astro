@@ -253,7 +253,7 @@ function calPositPL_bdl( JD ){
 	var wx   = 1.0;
 	var w    = new Array();
 
-	for(m = 0;m <= 2;m++){
+	for(var iv, imin, cf, sf, f, m = 0;m <= 2;m++){
 		for(iv = 1;iv <= 3;iv++){
 			w[iv] = 0.0;
 		}

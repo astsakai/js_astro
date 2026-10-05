@@ -40,7 +40,7 @@ function CnvPlanetHouse0( pos, csp){
 	var ang1 = 0.0;
 	var hse;
 
-	for(j = 1;j <= 12;j++){
+	for(var j = 1;j <= 12;j++){
 		cusp0 = csp[j];
 		cusp1 = csp[j % 12 + 1];
 		ang0  = angle1(pos,   cusp0);
@@ -127,7 +127,7 @@ function checkRetrograde(ye, mo, da, ho, mi){
 	var vel  = 0.0;
 
 	for( var i = 1; i <= 10; i++ ){
-		vel = (pos1[i] - pos[i]) * 720.0;
+		vel = (pos1[i] - pos0[i]) * 720.0;
 		if(vel < 0.0) ret[i] = -1;
 	}
 

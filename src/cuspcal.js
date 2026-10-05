@@ -83,7 +83,7 @@ function calHousePlacidus(LST, Lat, obl){
 	var MC  = angle[ 1 ];
 
 	// Calculating Cusps...
-	for( var i = 1; i <= 12; i++ ){
+	for( var nh, i = 1; i <= 12; i++ ){
 		if(i % 3 == 1){
 			cusp[i] = mod360(((i % 6 == 1) ? ASC : MC) +
 									((i > 2) && (i < 8) ? 180.0 : 0.0));
@@ -256,7 +256,7 @@ function calHouseAxial(LST, Lat, obl){
 	var alpha, cspx, cspy;
 	var cusp = new Array();
 
-	for(i = 10;i < 16;i++){
+	for(var house, i = 10;i < 16;i++){
 		house = ((i > 12) ? i - 12 : i);
 		alpha = LST + 60.0 + 30.0 * house;
 		cspx  = cos4deg(alpha) * cos4deg(obl);
@@ -279,7 +279,7 @@ function calHouseMorinus(LST, Lat, obl){
 	var Z, cspx, cspy;
 	var cusp = new Array()
 
-	for(i = 1;i <= 12;i++){
+	for(var i = 1;i <= 12;i++){
 		Z = mod360(LST + 60.0 + 30.0 * i);
 		cspx = cos4deg(Z);
 		cspy = sin4deg(Z) * cos4deg(obl);
