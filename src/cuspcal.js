@@ -82,6 +82,9 @@ function calHousePlacidus(LST, Lat, obl){
 	var ASC = angle[ 0 ];
 	var MC  = angle[ 1 ];
 
+	if (Lat < -66.5 || 66.5 < Lat)
+		throw new Error('|' + Lat + '| > 66.5')
+
 	// Calculating Cusps...
 	for( var i = 1; i <= 12; i++ ){
 		if(i % 3 == 1){
